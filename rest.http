@@ -1,5 +1,23 @@
-### Get token
-GET http://localhost:8000/token
+### Get Users
+GET http://localhost:8000/users
+
+### Login User
+POST http://localhost:8000/login
+Content-Type: application/json
+
+{   
+    "username": "Fish",
+    "password": "hsif"
+}
+
+### Register User
+POST http://localhost:8000/register
+Content-Type: application/json
+
+{   
+    "username": "Frog",
+    "password": "gorf"
+}
 
 ### Get secure message
 GET http://localhost:8000/secure
