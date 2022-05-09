@@ -8,36 +8,145 @@
     <title>Backend Security with JWT </title>
 </head>
 <body>
-    <h1 class="text-center">Try to login</h1>
+    <h1 class="text-center">Please 🥸 Login</h1>
     <form class="login-form mx-4">
         <div class="mt-4 mb-3">
-            <label for="username" class="form-label">Username</label>
-            <input type="text" class="form-control" name="username" id="username" required>
+            <label for="loginUsername" class="form-label">Username</label>
+            <input type="text" class="form-control" name="loginUsername" id="loginUsername" required>
         </div>
 
         <div class="mb-4">
-            <label for="password" class="form-label">Password</label>
-            <input type="password" class="form-control" name="password" id="password" required>
+            <label for="loginPassword" class="form-label">Password</label>
+            <input type="password" class="form-control" name="loginPassword" id="loginPassword" required>
         </div>
 
-        <button class="btn btn-primary">Login</button>
-        <a href="#" class="link-primary">Click here to register</a>
+        <button class="btn btn-primary loginBtn">Login</button>
+        <a href="#" class="link-primary linkToRegister">Click here to register</a>
     </form>
 
-    <form class="register-form mx-4">
+    <form class="register-form mx-4" style="display: none;">
         <div class="mt-4 mb-3">
-            <label for="username" class="form-label">Username</label>
-            <input type="text" class="form-control" name="username" id="username" required>
+            <label for="registerUsername" class="form-label">Username</label>
+            <input type="text" class="form-control" name="registerUsername" id="registerUsername" required>
         </div>
 
         <div class="mb-4">
-            <label for="password" class="form-label">Password</label>
-            <input type="password" class="form-control" name="password" id="password" required>
+            <label for="registerPassword" class="form-label">Password</label>
+            <input type="password" class="form-control" name="registerPassword" id="registerPassword" required>
         </div>
 
-        <button class="btn btn-primary">Login</button>
-        <a href="#" class="link-primary">Click here to register</a>
+        <button class="btn btn-primary registerBtn">Register</button>
+        <a href="#" class="link-primary linkToLogin">Back to login</a>
     </form>
+
+    <main class="text-center" style="display: none;">
+        <button type="button" class="btn btn-primary logoutBtn">Logout</button>
+    </main>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    
+    <!--  JS -->
+    <script type="module">
+        const portURL = 'http://localhost:8000'
+        const h1 = document.querySelector('h1')
+        const registerLink = document.querySelector(".linkToRegister")
+        const loginLink = document.querySelector(".linkToLogin")
+        const loginForm = document.querySelector(".login-form")
+        const registerForm = document.querySelector(".register-form")
+        const main = document.querySelector('main')
+        const logoutBtn = document.querySelector('.logoutBtn')
+
+        // Keep User logged-in
+        const isToken = localStorage.getItem("token")
+        const landingDiv = document.createElement("div")
+        function loginPage() {
+            loginForm.style.display = "none";
+            main.style.display = "block";
+            h1.innerHTML = `Welcome ${localStorage.getItem("username")} 👋`
+            landingDiv.innerHTML = `<img src="http://placekitten.com/${window.innerWidth}/${window.innerWidth}" class="img-fluid p-4" alt="kitten">`
+            main.appendChild(landingDiv)
+        }
+        if(isToken) {
+            loginPage()
+        }
+
+        // Logout User
+        logoutBtn.addEventListener('click', () => {
+            localStorage.clear()
+            landingDiv.remove()
+            loginForm.style.display = "block";
+            main.style.display = "none";
+        })
+
+        // Switch to Register Form 
+        registerLink.addEventListener('click', () => {
+            if(loginForm.style.display === "" || loginForm.style.display === "block") {
+                loginForm.style.display = "none";
+                registerForm.style.display = "block"
+                h1.innerHTML = "Please 📋 Register"
+            }
+        })
+        // Switch to Login Form 
+        loginLink.addEventListener('click', () => {
+            if(registerForm.style.display === "block") {
+                loginForm.style.display = "block";
+                registerForm.style.display = "none"
+                h1.innerHTML = "Please 🥸 Login"
+            }
+        })
+
+        // Login request
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault()
+            const payload = {
+                "username": document.getElementById('loginUsername').value,
+                "password": document.getElementById('loginPassword').value
+            }
+
+            const headers = { "Content-Type": "application/json" }
+            const config = { method: "POST", headers, body: JSON.stringify(payload) }
+            try {
+                const res = await fetch(portURL + "/login", config)
+                const result = await res.json()
+                console.log('result :>> ', result);
+                localStorage.setItem("token", result.token)
+                localStorage.setItem("username", document.getElementById('loginUsername').value)
+                loginPage()
+            } catch (err) {
+                console.error(err);
+            }
+        })
+        // Register request
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault()
+            const alertDiv = document.querySelector('.alert')
+            if(alertDiv) {
+                alertDiv.remove()
+            }
+            const payload = {
+                "username": document.getElementById('loginUsername').value,
+                "password": document.getElementById('loginPassword').value
+            }
+
+            const headers = { "Content-Type": "application/json" }
+            const config = { method: "POST", headers, body: JSON.stringify(payload) }
+            try {
+                const res = await fetch(portURL + "/register", config)
+                const result = await res.json()
+                console.log('result :>> ', result);
+
+                const warningDiv = document.createElement('div')
+                if(result.message === "Username already exist") {
+                    warningDiv.innerHTML = `<div class="alert alert-danger mt-4" role="alert">${result.message}</div>`
+                    registerForm.appendChild(warningDiv)
+                } else if (result.message === "User registered") {
+                    warningDiv.innerHTML = `<div class="alert alert-success mt-4" role="alert">You have successfully registered! Now try to login 🤗</div>`
+                    registerForm.appendChild(warningDiv)
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        })
+    </script>
 </body>
 </html>

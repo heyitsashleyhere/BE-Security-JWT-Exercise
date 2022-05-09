@@ -2,7 +2,7 @@ import express from 'express'
 import dotenv from 'dotenv'
 import jsonwebtoken from 'jsonwebtoken'
 import { v4 as uuidv4 } from 'uuid'
-import { hash } from './lib/crypto.js'
+import { hash, compareHashes } from './lib/crypto.js'
 // Provide a Connect/Express middleware that can be used to enable Cross-Origin Resource Sharing with various options
 import cors from 'cors'
 
@@ -15,17 +15,12 @@ app.use(express.json())
 const secret = process.env.SECRET
 
 // imagine this as my backend DB:
-let users= [
-    { userId: "1", username: "Chicken", password:"nekcihc" },
-    { userId: "2", username: "Dog",     password:"god" },
-    { userId: "3", username: "Cat",     password:"tac" },
-    { userId: "4", username: "Cow",     password:"woc" },
-    { userId: "5", username: "Fish",    password: "hsif"}
-]
+let users= []
 
 // User can login
 function checkUser(req, res, next) {
-    const user = users.find( u => req.body.username === u.username && req.body.password === u.password)
+    console.log(users);
+    const user = users.find( u => req.body.username === u.username && compareHashes(req.body.password, u.password) )
     if (user) {
         return next()
     }
@@ -35,7 +30,7 @@ function checkUser(req, res, next) {
 function checkUsernameIsUnique(req, res, next) {
     const isNotUnique = users.find( u => req.body.username === u.username)
     if(isNotUnique) {
-        return res.status(406).send("Username already exist")
+        return res.status(406).send({message: "Username already exist"})
     }
     next()
 }
@@ -54,7 +49,7 @@ app.post("/login", checkUser, (req, res) => {
     }
 
     const token = jsonwebtoken.sign(payload, secret, options)
-    return res.status(200).send(token)
+    return res.status(200).send({token}) // always send back an OBJECT!
 })
 
 // 2. Add registration
@@ -62,12 +57,13 @@ app.post("/register", checkUsernameIsUnique, async (req, res) => {
     const hashed = await hash(req.body.password)
     const newUser = {
         userId: uuidv4(), 
-        userName: req.body.username,
+        username: req.body.username,
         password: hashed
     }
 
     users.push(newUser)
-    return res.status(200).send("User registered")
+    console.log(users);
+    return res.status(200).send({message: "User registered"})
 })
 
 

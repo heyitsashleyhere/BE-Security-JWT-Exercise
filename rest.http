@@ -6,8 +6,8 @@ POST http://localhost:8000/login
 Content-Type: application/json
 
 {   
-    "username": "Fish",
-    "password": "hsif"
+    "username": "Frog",
+    "password": "gorf"
 }
 
 ### Register User

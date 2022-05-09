@@ -21,7 +21,7 @@ Your task is to improve on our example app
 - make sure to commit an example .env
 - make the secret, port and token expiration time come from env
 
-## 4. **BONUS** 
+## 4. **BONUS** ✅
 
 - create a VERY simple frontend that uses our example app
 - a single file with basic html+css+js; save the JWT to localstorage
