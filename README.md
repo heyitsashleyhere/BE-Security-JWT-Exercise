@@ -26,11 +26,13 @@ Your task is to improve on our example app
 - create a VERY simple frontend that uses our example app
 - a single file with basic html+css+js; save the JWT to localstorage
 
-## 5. **XTRA BONUS** 
+## 5. **XTRA BONUS** ✅
 
 - add a database connection for the users
 
+## My solution result:
 
+![demo](./assests/demo.gif)
 
 
 

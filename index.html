@@ -39,6 +39,8 @@
         <a href="#" class="link-primary linkToLogin">Back to login</a>
     </form>
 
+    <div class="alert alert-danger mt-4 mx-4" role="alert" style="display: none;"></div>
+
     <main class="text-center" style="display: none;">
         <button type="button" class="btn btn-primary logoutBtn">Logout</button>
     </main>
@@ -55,6 +57,7 @@
         const registerForm = document.querySelector(".register-form")
         const main = document.querySelector('main')
         const logoutBtn = document.querySelector('.logoutBtn')
+        const alertDiv = document.querySelector('.alert')
 
         // Keep User logged-in
         const isToken = localStorage.getItem("token")
@@ -98,6 +101,9 @@
         // Login request
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault()
+            alertDiv.style.display = 'none'
+            alertDiv.classList.remove('alert-success')
+            alertDiv.classList.add('alert-danger')
             const payload = {
                 "username": document.getElementById('loginUsername').value,
                 "password": document.getElementById('loginPassword').value
@@ -108,10 +114,15 @@
             try {
                 const res = await fetch(portURL + "/login", config)
                 const result = await res.json()
-                console.log('result :>> ', result);
-                localStorage.setItem("token", result.token)
-                localStorage.setItem("username", document.getElementById('loginUsername').value)
-                loginPage()
+                console.log('result :>> ', result.error);
+                if(result.error) {
+                    alertDiv.innerHTML = `${result.error}`
+                    alertDiv.style.display = 'block'
+                } else {
+                    localStorage.setItem("token", result.token)
+                    localStorage.setItem("username", document.getElementById('loginUsername').value)
+                    loginPage()
+                }
             } catch (err) {
                 console.error(err);
             }
@@ -119,13 +130,12 @@
         // Register request
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault()
-            const alertDiv = document.querySelector('.alert')
-            if(alertDiv) {
-                alertDiv.remove()
-            }
+            alertDiv.style.display = 'none'
+            alertDiv.classList.remove('alert-success')
+            alertDiv.classList.add('alert-danger')
             const payload = {
-                "username": document.getElementById('loginUsername').value,
-                "password": document.getElementById('loginPassword').value
+                "username": document.getElementById('registerUsername').value,
+                "password": document.getElementById('registerPassword').value
             }
 
             const headers = { "Content-Type": "application/json" }
@@ -136,12 +146,14 @@
                 console.log('result :>> ', result);
 
                 const warningDiv = document.createElement('div')
-                if(result.message === "Username already exist") {
-                    warningDiv.innerHTML = `<div class="alert alert-danger mt-4" role="alert">${result.message}</div>`
-                    registerForm.appendChild(warningDiv)
+                if(result.error === "Username already exist") {
+                    alertDiv.innerHTML = `${result.error}`
+                    alertDiv.style.display = 'block'
                 } else if (result.message === "User registered") {
-                    warningDiv.innerHTML = `<div class="alert alert-success mt-4" role="alert">You have successfully registered! Now try to login 🤗</div>`
-                    registerForm.appendChild(warningDiv)
+                    alertDiv.classList.remove('alert-danger')
+                    alertDiv.classList.add('alert-success')
+                    alertDiv.innerHTML = `${result.message}`
+                    alertDiv.style.display = 'block'
                 }
             } catch (err) {
                 console.error(err);
